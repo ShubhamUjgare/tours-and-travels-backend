@@ -10,10 +10,10 @@ const router = express.Router();
  */
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, phone, city } = req.body;
+    const { name, email, password, phone} = req.body;
 
     // 1️⃣ Validate
-    if (!name || !email || !password || !phone || !city) {
+    if (!name || !email || !password || !phone) {
       return res.status(400).json({ message: "All fields required" });
     }
 
@@ -31,8 +31,7 @@ router.post("/signup", async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      phone,
-      city
+      phone
     });
 
     // 5️⃣ Create token (Instagram-style)
@@ -50,8 +49,7 @@ router.post("/signup", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        phone: user.phone,
-        city: user.city
+        phone: user.phone
       }
     });
 
@@ -94,8 +92,7 @@ router.post("/login", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        phone: user.phone,
-        city: user.city
+        phone: user.phone
       }
     });
 
