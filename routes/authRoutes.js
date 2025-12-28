@@ -6,11 +6,11 @@ const User = require("../models/user");
 const router = express.Router();
 
 /**
- * REGISTER
+ * REGISTER / SIGNUP
  */
-router.post("/register", async (req, res) => {
+router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone, city } = req.body;
 
     if (!name || !email || !password || !phone) {
       return res.status(400).json({ message: "All fields required" });
@@ -18,7 +18,7 @@ router.post("/register", async (req, res) => {
 
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(409).json({ message: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -27,18 +27,36 @@ router.post("/register", async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      phone
+      phone,
+      city
     });
 
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     res.status(201).json({
-      message: "User registered successfully"
+      message: "User registered successfully",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        city: user.city
+      }
     });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// LOGIN
+/**
+ * LOGIN
+ */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -69,13 +87,15 @@ router.post("/login", async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        phone: user.phone,
+        city: user.city
       }
     });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 module.exports = router;
